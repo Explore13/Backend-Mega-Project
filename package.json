@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "backend mega project created while learning backend dev in JS from Chai aur Code youtube channel.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [
     "javascript",
@@ -13,5 +14,8 @@
     "nodejs"
   ],
   "author": "Surya Ghosh",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
 }
