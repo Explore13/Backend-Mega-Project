@@ -1,0 +1,17 @@
+{
+  "name": "backend_mega_project",
+  "version": "1.0.0",
+  "description": "backend mega project created while learning backend dev in JS from Chai aur Code youtube channel.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "explorer",
+    "backend",
+    "nodejs"
+  ],
+  "author": "Surya Ghosh",
+  "license": "ISC"
+}
