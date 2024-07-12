@@ -5,20 +5,21 @@ As soon as possible we should import the "dotenv"
 // require('dotenv').config() // Consistency is not maintained in the code.
 import connectDB from "./db/index.js";
 import dotenv from "dotenv";
+import { app } from "./app.js";
 
 dotenv.config({
   path: "./env",
 });
 
-connectDB();
-
-
-
-
-
-
-
-
+connectDB() // an async method, it will return promises.
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`Server is running at ${process.env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log("MongoDB connection failed !!", err);
+  });
 
 /*
 import mongoose from "mongoose";

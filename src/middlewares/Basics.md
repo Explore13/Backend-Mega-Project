@@ -1,0 +1,2 @@
+- `Middlewares` are functions that are executed before or after a request is handled by a controller. `Middleware` can be used to perform operations like logging, authentication, or error handling.
+- (err, req, res, next) ---> `next` is a flag that is used to mention that middleware has done its work, now jump to the next process.
