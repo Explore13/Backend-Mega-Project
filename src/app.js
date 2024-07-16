@@ -32,4 +32,19 @@ app.use(express.static("public"));
 
 // To access the cookies from user's browser and send the cookie to user's browser we use cookie-parser
 app.use(cookieParser());
+
+
+
+
+// routes
+import userRouter from "./routes/user.routes.js";
+
+
+
+// routes declaration
+
+// app.use("/users",userRouter)
+app.use("/api/v1/users",userRouter) // declaring and api with version 1 and users route
+
+
 export { app };
