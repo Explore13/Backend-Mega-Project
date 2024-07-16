@@ -19,6 +19,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // return response
 
   const { fullName, email, username, password } = req.body;
+  console.log("\nBody data : ", req.body); 
 
   // empty field validation
 
@@ -30,48 +31,61 @@ const registerUser = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "All fields are required");
   }
-});
 
-// existing user checking
-const existedUser = User.findOne({
-  $or: [{ username }, { email }],
-});
+  // existing user checking
+  const existedUser = await User.findOne({
+    $or: [{ username }, { email }],
+  });
 
-if (existedUser)
-  throw new ApiError(409, "User with email or username already exists");
+  if (existedUser)
+    throw new ApiError(409, "User with email or username already exists");
 
-// storing the path from multer
-const avatarLocalPath = req.files?.avatar[0]?.path;
-const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // storing the path from multer
+  console.log("\nFiles Data : ", req.files);
+  const avatarLocalPath = req.files?.avatar[0]?.path;
 
-if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required");
+  // const coverImageLocalPath = req.files?.coverImage[0]?.path; // We faced error if do not send any cover image
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files?.coverImage[0]?.path;
+  }
 
-// upload on cloudinary
-const avatar = await uploadOnCloudinary(avatarLocalPath);
-const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-
-if (!avatar)
+  // checking if avatar is send or not by the user
   if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required");
 
-// Creating an object and upload on db
-const user = await User.create({
-  fullName,
-  avatar: avatar.url,
-  coverImage: coverImage?.url || "",
-  email,
-  password,
-  username: username.toLowerCase(),
+  // upload on cloudinary
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+  if (!avatar)
+    if (!avatarLocalPath) throw new ApiError(400, "Avatar file is required");
+
+  // Creating an object and upload on db
+  const user = await User.create({
+    fullName,
+    avatar: avatar.url,
+    coverImage: coverImage?.url || "",
+    email,
+    password,
+    username: username.toLowerCase(),
+  });
+
+  // find the user by id that is returned during user creation
+  const createdUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  ); // "-password -refeshToken" means we will get the full information about the user excluding the password and refreshToken
+
+  if (!createdUser)
+    throw new ApiError(500, "Something went wrong while registering the user");
+
+  console.log(`User ${createdUser._id} with ${createdUser.fullName} is registered successfully`);
+  return res
+    .status(201)
+    .json(new ApiResponse(200, createdUser, "User registered successfully"));
 });
 
-// find the user by id that is returned during user creation
-const createdUser = await User.findById(user._id).select(
-  "-password -refreshToken"
-); // "-password -refeshToken" means we will get the full information about the user excluding the password and refreshToken
-
-if (!createdUser)
-  throw new ApiError(500, "Something went wrong while registering the user");
-
-return res
-  .status(201)
-  .json(new ApiResponse(200, createdUser, "User registered successfully"));
 export { registerUser };
