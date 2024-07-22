@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import { deleteFromCloudinary } from "../utils/deleteOldCloudinaryImage.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -296,17 +297,44 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   if (!avatar.url) throw new ApiError(400, "Error while uploading the avatar");
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: { avatar: avatar.url },
-    },
-    { new: true }
-  ).select("-password");
+  // const oldAvatarId = await User.findById(req.user?._id).select("avatar");
+  // if (oldAvatarId) {
+  //   const response = await deleteFromCloudinary(oldAvatarId);
+  //   if (!response) {
+  //     console.log(`Avatar with ID ${oldAvatarId} is not found in cloudinary`);
+  //   }
+  // }
+
+  // const user = await User.findByIdAndUpdate(
+  //   req.user?._id,
+  //   {
+  //     $set: { avatar: avatar.url },
+  //   },
+  //   { new: true }
+  // ).select("-password");
+
+  // Similar to the upper commented code, it is more refined and easy to understand
+
+  const user = await User.findById(req.user?._id);
+  const oldAvatarId = user.avatar;
+  if (oldAvatarId) {
+    const response = await deleteFromCloudinary(oldAvatarId);
+    if (!response)
+      console.log(`Avatar with ID ${oldAvatarId} is not found in cloudinary`);
+  }
+
+  user.avatar = avatar.url;
+  const updatedUser = await user.save();
+
+  // Exclude the password field from the response
+  const { password, ...userWithoutPassword } = updatedUser.toObject();
+  console.log("Updated User:", userWithoutPassword);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "Avatar updated successfully"));
+    .json(
+      new ApiResponse(200, userWithoutPassword, "Avatar updated successfully")
+    );
 });
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
